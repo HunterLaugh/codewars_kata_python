@@ -1,3 +1,4 @@
+# coding:utf-8
 '''
 Simplifying multilinear polynomials
 When we attended middle school were asked to simplify mathematical expressions like "3x-yx+2xy-x" (or usually bigger), and that was easy-peasy ("2x+xy"). But tell that to your pc and we'll see!
@@ -30,16 +31,169 @@ Warning: the string in input can contain arbitrary variables represented by lowe
 
 Good Work :)
 '''
+# 简化多项式，合并同类项，排序输出
+# 输入：多项式
+# 输出：多项式（合入同类项后，简化，排序后）
+# 排序：1、按多项式len，即数量	2、按asccii码
 
+# 解题思路：按'+-'分解poly，ascii码排序，并记录count alpha值
+# 如poly '4abc+yz-3x-2zy‘分解为splitPoly ['4abc','yz','3x','-2yz']，并记countAlpha [3,2,1,2]
+# 合并相同多因子
+# 按len排序输出为string
+
+# '-x-2xy' --> ['-x','-2xy']
+def splitPoly(poly):
+	# split poly with '+-' and sort()
+	split=[]
+	temp=[]
+	for each in poly:
+		if (each in '+-') and temp:
+			temp.sort()
+			split.append(''.join(temp))
+			temp=[each]
+		else:
+			temp.append(each)
+	
+	temp.sort()
+	split.append(''.join(temp))
+	
+	if split[0][0] not in '+-':
+		split[0]='+'+split[0]
+
+	return split
+
+# '-2xy' --> '-'
+def getOperator(string):
+	if '-' in string:
+		return '-'
+	else:
+		return '+'
+		
+# '-2xy' --> 2		
+def getNum(string):
+	num=[]
+	for each in string:
+		if each.isdigit():
+			num.append(each)
+	if not num:
+		num=['1']
+	return int(''.join(num))
+
+# '-2xy' --> 'xy'	
+def getPoly(string):
+	res=[]
+	for each in string:
+		if each.isalpha():
+			res.append(each)
+	return ''.join(res)
+
+	
+def isSamePoly(str1,str2):
+	return getPoly(str1)==getPoly(str2)
+	
+	
+def addTwoStr(str1,str2):
+	res=None
+	if isSamePoly(str1,str2):
+		op1=getOperator(str1)
+		op2=getOperator(str2)
+		num1=getNum(str1)
+		num2=getNum(str2)
+		if op1=='+' and op2=='+':
+			num=num1+num2
+		elif op1=='+' and op2=='-':
+			num=num1-num2
+		elif op1=='-' and op2=='+':
+			num=-num1+num2
+		else:
+			num=-num1-num2
+		
+		if num>0:
+			if num==1:
+				res='+'+getPoly(str1)
+			else:
+				res='+'+str(num)+getPoly(str1)
+		elif num==0:
+			res=None
+		else:
+			if num==-1:
+				res='-'+getPoly(str1)
+			else:
+				res=str(num)+getPoly(str1)
+		
+		return res
+
+
+def addPoly(poly):
+	i=0
+	while i<len(poly)-1:
+		j=i+1
+		while j<len(poly):
+			if isSamePoly(poly[i],poly[j]):
+				poly[i]=addTwoStr(poly[i],poly[j])
+				poly.pop(j)
+				j-=1
+				if not poly[i]:
+					poly.pop(i)
+					i-=1
+					break
+			j+=1
+		i+=1
+	return poly
+	
+
+# str1<str2 return True , else False 
+def isMinToMax(str1,str2):
+	s1=getPoly(str1)
+	s2=getPoly(str2)
+	if len(s1)<len(s2):
+		return True
+	elif len(s1)==len(s2):
+		i=0
+		while i<len(s1):
+			if ord(s1[i])<ord(s2[i]):
+				return True
+			i+=1
+	return False
+
+	
+def sortByLenAscii(poly):
+	i=0
+	while i<len(poly)-1:
+		j=i+1
+		while j<len(poly):
+			if not isMinToMax(poly[i],poly[j]):
+				temp=poly[i]
+				poly[i]=poly[j]
+				poly[j]=temp
+			j+=1
+		i+=1
+			
+	return poly
+	
+	
 def simplify(poly):
+	split=splitPoly(poly)
+	print(split)
+	add=addPoly(split)
+	print(add)
+	st=sortByLenAscii(add)
+	print(st)
+	if st[0][0]=='+':
+		st[0]=st[0][1:]
+	res=''.join(st)
+	print(res)
+	return ''.join(st)
+
+		
 
 
 
-
-
-# TEST CASE
+# TEST CASE	PASSED ALL THE CASES IN CODEWAR
+simplify("-x+2xy-y-xy-dc+dcba-c-dca-3xy-2abcd+2x")		#	 "cd+abcd"
+'''
 test.it("Test reduction by equivalence")
-test.assert_equals(simplify("dc+dcba"), "cd+abcd")
+
 
 test.assert_equals(simplify("2xy-yx"),"xy")
 
@@ -59,3 +213,4 @@ test.it("Test no leading +")
 test.assert_equals(simplify("-y+x"),"x-y")
 
 test.assert_equals(simplify("y-x"),"-x+y")
+'''
