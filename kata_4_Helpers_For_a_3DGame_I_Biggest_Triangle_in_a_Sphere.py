@@ -67,76 +67,84 @@ Enjoy it!
 ##########################################################################
 # input: 球（圆心O坐标[α, β, γ]，半径），point_list(很多点如A\B\C\D\E，每个点坐标[x,y,z])
 # output:组成的三角形个数，最大三角形的面积，最大三角形三个顶点坐标（按point_list顺序）
-# 限制条件：三角形的顶点在球内
-# 如果point_list点全在球外，返回空列表
+# 限制条件：三角形的顶点在球内，d < r and |(d - r) / r| >10**-10；如果point_list点全在球外，返回空列表
 # point_list点有效，且只出现1次
-# 三点共线，不能构成三角形
-# 如果三角形面积小于10**-8，这些点共线
+# 三点共线，不能构成三角形；如果三角形面积小于10**-8，这些点共线
+# max(area)-area<10**-8  area的点坐标也需返回，有多个点
 
-def biggest_triang_int(point_list, center, radius):
-	interior=[]		# point in sphere
+# distance of two point
+def distance(point1,point2):
+	d=((point1[0]-point2[0])**2+(point1[1]-point2[1])**2+(point1[2]-point2[2])**2)**0.5
+	return d
+
+
+# point in sphere	
+def interior(point_list,center,radius):
+	res=[]
 	for each in point_list:
-		if isInSphere(center,radius,each):
-			interior.append(each)
+		d=distance(each,center)
+		if d<radius and (radius-d)/radius>10**-10:
+			res.append(each)
+	return res 
+
 	
-	if not interior:
-		return []
-	
-	count=0				# how many triangles
-	triangles=[]		# triangle three point	
-	areas=[]
-	n=len(interior)		
-	for a in range(n-2):
-		for b in range(a+1,n-1):
-			for c in range(b+1,n):
-				area=area_triangle(interior[a],interior[b],interior[c])
-				if area:
-					count+=1
-					triangles.append([interior[a],interior[b],interior[c]])
-					areas.append(area)
-	
-	max_area=max(areas)
-	res=[count,max_area]
-	index=0
-	temp=[]
-	while index<len(areas):
-		if max_area-areas[index]<=10**-8:
-			temp.append(triangles[index])
-		index+=1
-	if len(temp)==1:
-		res.append(temp[0])
-	else:
-		res.append(temp)
-	print('end',res)
-	return res
-	
-				
-def distance(p1,p2):
-	i=0
-	sum=0
-	while i<3:
-		sum+=(p1[i]-p2[i])**2
-		i+=1
-	return sum**0.5
-		
-def isInSphere(sphere_center,radius,point):
-	d=distance(sphere_center,point)
-	if d<radius and (radius-d)/radius>10**-10:
-		return True
-	else:
-		return False
-	
-def area_triangle(p1,p2,p3):
-	a=distance(p1,p2)
-	b=distance(p1,p3)
-	c=distance(p2,p3)
+# triangle's area
+def area_triangle(A,B,C):
+	a=distance(B,C)
+	b=distance(A,C)
+	c=distance(A,B)
 	s=(a+b+c)/2
 	area=(s*(s-a)*(s-b)*(s-c))**0.5
-	if area<10**-8:
-		return 0
-	else:
+	if area>10**-8:
 		return area
+	else:
+		return None
 
+
+# all available triangle and it's area		
+def all_triangle_and_area(interior):
+	triangles=[]
+	areas=[]
+	n=len(interior)
+	i=0
+	while i<n-2:
+		j=i+1
+		while j<n-1:
+			k=j+1
+			while k<n:
+				area=area_triangle(interior[i],interior[j],interior[k])
+				if area:
+					triangles.append([interior[i],interior[j],interior[k]])
+					areas.append(area)
+				k+=1
+			j+=1
+		i+=1
+	return [triangles,areas]
+	
+
+# max triangle area and triangle's three angle
+def max_triangle(triangle,area):
+	n=len(area)
+	biggest_area=max(area)
+	biggest_tri=[]
+	
+	index=0
+	while index<n:
+		if biggest_area-area[index]<=10**-8:
+			biggest_tri.append(triangle[index])
+		index+=1
+	if len(biggest_tri)==1:
+		biggest_tri=biggest_tri[0]
+	return [n,biggest_area,biggest_tri]
+	
+def biggest_triang_int(point_list, center, radius):
+	inter=interior(point_list,center,radius)
+	triangle_and_area=all_triangle_and_area(inter)
+	triangle,area=triangle_and_area
+	if (not inter) or (not area):
+		return []
+	res=max_triangle(triangle,area)
+	return res
 		
 ##########################################################################
 # TEST CASE		PASSED ALL THE CASES   --> SO HAPPY
@@ -170,16 +178,6 @@ test.assert_equals(res[0], result[0])
 test.assert_equals(res[2], result[2])
 assertFuzzyEquals(res[1], result[1])
 
-points_list2 = [[1,2,-4],[-3, 2, 4],[7, 8, -4],
-[2, 3, 5],[-2, -1, 1],[3, 2, 6],[1, 4, 0], 
-[-4, -5, -6],[4, 5, 6],[-2, -3, -5],[-1, -2, 4],
-[-3, -2, -6], [-1, -4, 0], [2, 1, -1]]
-sphere_center2 = [0, 0, 0]
-radius2 = 8
-res = biggest_triang_int(points_list2, sphere_center2, radius2)
-result = [165, 33.645207682521445, 
-[[[1, 2, -4], [3, 2, 6], [-1, -4, 0]], 
-[[1, 4, 0], [-1, -2, 4], [-3, -2, -6]]]]
 test.assert_equals(res[0], result[0])
 test.assert_equals(res[2], result[2])
 assertFuzzyEquals(res[1], result[1])

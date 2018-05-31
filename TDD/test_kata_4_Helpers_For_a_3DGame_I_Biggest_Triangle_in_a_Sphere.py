@@ -3,7 +3,7 @@
 import unittest
 import sys
 sys.path.append('/mnt/f/github/codewars_kata_python')
-from 4_kyu_Helpers_For_a_3DGame_I_Biggest_Triangle_in_a_Sphere import *
+from kata_4_Helpers_For_a_3DGame_I_Biggest_Triangle_in_a_Sphere import *
 
 class Test_biggest_triang_int(unittest.TestCase):
 	'''Test mathfunc.py'''
