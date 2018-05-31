@@ -1,7 +1,9 @@
 # coding:utf-8
 
 import unittest
-from ../mathfunc import *
+import sys
+sys.path.append('/mnt/f/github/codewars_kata_python')
+from mathfunc import *
 
 class TestMathFunc(unittest.TestCase):
 	'''Test mathfunc.py'''
