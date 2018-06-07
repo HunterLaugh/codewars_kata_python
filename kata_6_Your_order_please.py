@@ -44,10 +44,8 @@ def order(sentence):
 			j+=1
 		i+=1
 	
-	logging.info('num')
-	logging.info(num)
-	logging.info('split')
-	logging.info(split)
+	logging.info('num: %s' % num)
+	logging.info('split: %s' % split)
 	
 	return ' '.join(split)
 	
