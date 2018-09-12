@@ -1,8 +1,6 @@
 # coding:utf-8
-'''
-game 2048 
+# game 2048  游戏2048
 
-'''
 import random
 # map is 4*4 matrix ; score 
 def initial():

@@ -85,26 +85,74 @@ def move(speed,coord,length,width):
 	else:
 		pass
 	logging.debug('speed %s, row %s, column %s' % (speed,row,column))
-	return [speed,row,column]
+	return [speed,[row,column]]
 	
 def blast_sequence(aliens,position):
-	M=position[0]+1
-	N=len(aliens[0])
-	logging.debug('M %s' % M)
-	logging.debug('N %s' % N)
+	M=position[0]+1		# row
+	N=len(aliens[0])	# column
 	
-	coordinate=[]
-	for each in aliens:
-		temp=[]
-		for idx in range(N):
-			temp.append(idx)
-		coordinate.append(temp)
-	logging.debug(coordinate)
-	
+	res=[]
 	turn=0
-	while 
+	for round in aliens:
+		property=[]
+		idx=0
+		for sp in round:
+			if sp!=0:
+				property.append([sp,[0,idx]])
+			idx+=1		
+			
+		while property:
+			sort=[]
+			i=0
+			while i<len(property):
+				speed,coord=property[i]
+				moved=move(speed,coord,M,N)
+				property[i]=moved
+				i+=1
+				if moved[1][1]==position[1]:
+					sort.append(moved)
+			logging.debug(property)
+			logging.debug(sort)
+			
+			for e in property:
+				if e[1][0]==M-1:
+					return None
+			logging.debug('start')
+			logging.debug(property)
+			flag=0
+			if len(sort)==0:
+				pass
+			elif len(sort)==1:
+				property.remove(sort[0])
+				flag=1
+			else:
+				max=sort[0]
+				for ev in sort[1:]:
+					if ev[1][0]>max[1][0]:
+						max=ev
+					elif ev[1][0]==max[1][0]:
+						if abs(max[0])<abs(ev[0]):
+							max=ev
+						elif abs(max[0])==abs(ev[0]) and ev[0]>0:
+							max=ev
+						else:
+							pass
+					else:
+						pass
+				property.remove(max)
+				flag=1
+			logging.debug('removed')
+			logging.debug(property)
+			if flag:
+				res.append(turn)
+			turn+=1
 
-# TEST CASE
+	logging.info('res %s' % res)
+	return res
+				
+		
+# TEST CASE	 when 0 is not pass  ai 
+
 example_aliens = [
 	[[3,1,2,-2,2,3,6,-3,7,1]],
 	[[5,2,-2,3,1,0,4,8,3,-2,5],[1,4,-1,0,3,6,1,-3,1,2,-4]],
@@ -115,5 +163,5 @@ example_solutions = [
 	[1,4,5,6,8,9,10,12,14,15,16,18,19,20,21,26,27,30,32,36],
 	[0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,17,18,19,21,22,23,25,27,30,31,32,35,36,38,40,43,45,56,58]]
 
-for aliens,pos,sol in zip(example_aliens,example_positions,example_solutions):
-	blast_sequence(aliens,pos)
+#for aliens,pos in zip(example_aliens,example_positions):
+blast_sequence(example_aliens[2],example_positions[2])
